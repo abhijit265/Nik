@@ -1,0 +1,78 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:mvc="http://www.springframework.org/schema/mvc" xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:security="http://www.springframework.org/schema/security"
+	xsi:schemaLocation="
+        http://www.springframework.org/schema/beans     
+        http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+        http://www.springframework.org/schema/context 
+        http://www.springframework.org/schema/context/spring-context-3.2.xsd
+        http://www.springframework.org/schema/mvc
+        http://www.springframework.org/schema/mvc/spring-mvc-3.2.xsd
+		http://www.springframework.org/schema/security
+		http://www.springframework.org/schema/security/spring-security-3.2.xsd">
+
+	<context:component-scan base-package="in.robo" />
+
+	<mvc:annotation-driven
+		content-negotiation-manager="contentNegotiationManager" />
+
+	<bean id="contentNegotiationManager"
+		class="org.springframework.web.accept.ContentNegotiationManagerFactoryBean">
+		<!-- Turn off working out content type based on URL file extension, should 
+			fall back to looking at the Accept headers -->
+		<property name="favorPathExtension" value="false" />
+	</bean>
+	
+	<bean id="viewResolver"
+		class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+		<property name="prefix">
+			<value>/WEB-INF/pages/</value>
+		</property>
+		<property name="suffix">
+			<value>.jsp</value>
+		</property>
+	</bean>
+	
+	<bean id="urlMapping"
+		class="org.springframework.web.servlet.handler.SimpleUrlHandlerMapping">
+		<property name="mappings">
+			<props>
+				<!-- <prop key="index.htm">indexController</prop> -->
+				<!-- <prop key="index.htm">indexController</prop> -->
+			</props>
+		</property>
+	</bean>
+
+	<!-- configuration for resources mapping -->
+	<mvc:resources mapping="/app/images/**" location="file:/D:/Ffreedom-DI/images/" />
+	<mvc:resources mapping="/images/**" location="/images/" />
+	<mvc:resources mapping="/js/**" location="/js/" />
+	<mvc:resources mapping="/css/**" location="/css/" />
+	<mvc:resources mapping="/xml/**" location="/xml/" />
+
+	<bean id="clientHttpRequestInterceptor" scope="prototype"
+		class="in.robo.token.ClientIntereceptor" lazy-init="true">
+	</bean>
+
+	<bean id="objectMapper" class="in.robo.common.web.CustomJacksonObjectMapper" />
+	
+	<bean id="restTemplate" class="org.springframework.web.client.RestTemplate">
+		<property name="requestFactory">
+			<bean id="clientHttpRequestFactory"
+				class="org.springframework.http.client.CommonsClientHttpRequestFactory" />
+		</property>
+		<property name="interceptors" ref="clientHttpRequestInterceptor">
+		</property>
+		<property name="messageConverters">
+			<list>
+				<bean id="jsonMessageConverter"
+					class="org.springframework.http.converter.json.MappingJacksonHttpMessageConverter">
+				</bean>
+			</list>
+		</property>
+	</bean>
+
+	<context:property-placeholder location="classpath:urls.properties" />
+
+</beans>
